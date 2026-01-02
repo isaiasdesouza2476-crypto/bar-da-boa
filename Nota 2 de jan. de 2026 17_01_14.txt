@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Bar da Boa • Raspadinha da Sorte</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #2b2b2b, #000);
+    color: #fff;
+    text-align: center;
+}
+
+.container {
+    padding: 20px;
+}
+
+.logo {
+    max-width: 200px;
+    margin: 20px auto;
+}
+
+h1 {
+    margin-bottom: 5px;
+}
+
+button {
+    padding: 15px;
+    margin: 10px;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    cursor: pointer;
+    background: #f5c542;
+    color: #000;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.hidden {
+    display: none;
+}
+
+input {
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    text-align: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.card {
+    background: #555;
+    border-radius: 15px;
+    padding: 35px 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.card.revelado {
+    background: #222;
+    cursor: default;
+}
+
+.premio {
+    color: #00ff99;
+    font-weight: bold;
+}
+
+.perdeu {
+    color: #ff4d4d;
+    font-weight: bold;
+}
+
+footer {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="telaValores">
+    <img src="logo.png" class="logo">
+    <h1>Promoção Bar da Boa 🍻</h1>
+    <p>A cada R$25,00 em consumo = 1 raspadinha</p>
+
+    <button onclick="selecionarValor(1)">R$ 25</button>
+    <button onclick="selecionarValor(2)">R$ 50</button>
+    <button onclick="selecionarValor(3)">R$ 75</button>
+    <button onclick="selecionarValor(4)">R$ 100</button>
+</div>
+
+<div class="container hidden" id="telaSenha">
+    <h2>Confirmação do atendente 🔐</h2>
+    <input type="password" id="senha" placeholder="Senha">
+    <br><br>
+    <button onclick="validarSenha()">Confirmar</button>
+</div>
+
+<div class="container hidden" id="telaJogo">
+    <h2>Raspe e boa sorte 🍀</h2>
+    <div class="grid" id="grid"></div>
+</div>
+
+<footer>
+Promoção válida para consumo acima de R$25,00
+</footer>
+
+<script>
+const SENHA = "1430";
+let raspadinhasPermitidas = 0;
+
+function selecionarValor(qtd) {
+    raspadinhasPermitidas = qtd;
+    document.getElementById("telaValores").classList.add("hidden");
+    document.getElementById("telaSenha").classList.remove("hidden");
+}
+
+function validarSenha() {
+    const s = document.getElementById("senha").value;
+    if (s === SENHA) {
+        document.getElementById("telaSenha").classList.add("hidden");
+        iniciarJogo();
+    } else {
+        alert("Senha incorreta");
+    }
+}
+
+function iniciarJogo() {
+    document.getElementById("telaJogo").classList.remove("hidden");
+
+    const total = 10;
+    let premios = [
+        "Vale 1 Cerveja",
+        "Vale 1 Cerveja",
+        "Vale 1 Copão",
+        "Vale 1 Copão"
+    ];
+
+    let resultados = Array(total).fill("Não foi dessa vez");
+    premios.forEach(p => {
+        let i;
+        do {
+            i = Math.floor(Math.random() * total);
+        } while (resultados[i] !== "Não foi dessa vez");
+        resultados[i] = p;
+    });
+
+    const grid = document.getElementById("grid");
+    grid.innerHTML = "";
+
+    resultados.forEach(res => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.textContent = "Raspar";
+
+        card.onclick = () => {
+            if (card.classList.contains("revelado")) return;
+            if (raspadinhasPermitidas <= 0) return;
+
+            raspadinhasPermitidas--;
+            card.classList.add("revelado");
+
+            if (res.includes("Vale")) {
+                card.innerHTML = "🎉<br><span class='premio'>" + res + "</span>";
+            } else {
+                card.innerHTML = "❌<br><span class='perdeu'>" + res + "</span>";
+            }
+        };
+
+        grid.appendChild(card);
+    });
+}
+</script>
+
+</body>
+</html>
