@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Raspadinha - Bar da Boa</title>
+<style>
+body { 
+    font-family: Arial, sans-serif; 
+    text-align: center; 
+    padding: 20px; 
+    background-color: #1a1a1a; 
+    color: #fff;
+}
+#logo { width: 200px; margin-bottom: 20px; }
+#valueContainer, #loginContainer, #scratchContainer { margin-top: 20px; }
+button { padding: 15px 25px; font-size: 18px; margin: 5px; cursor: pointer; }
+#scratchContainer { display: none; }
+.scratch-card { position: relative; display: inline-block; margin: 10px; }
+.prize { 
+    width: 150px; 
+    height: 100px; 
+    line-height: 100px; 
+    background-color: #333; 
+    font-weight: bold; 
+    color: #fff; 
+    border: 2px solid #555; 
+    border-radius: 8px; 
+    user-select: none; 
+}
+.canvas-overlay { position: absolute; top: 0; left: 0; width: 150px; height: 100px; }
+#remaining { font-weight: bold; font-size: 18px; margin-top: 10px; }
+#congrats { 
+    display: none; 
+    position: fixed; 
+    top: 40%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    background: #ffd700; 
+    padding: 20px 30px; 
+    border-radius: 10px; 
+    font-size: 20px; 
+    font-weight: bold; 
+    color: #333; 
+    animation: fade 2s ease-out forwards; 
+}
+@keyframes fade { 
+    0% {opacity:0; transform: translate(-50%, -60%) scale(0.8);} 
+    50% {opacity:1; transform: translate(-50%, -50%) scale(1.1);} 
+    100% {opacity:0; transform: translate(-50%, -50%) scale(1);} 
+}
+</style>
+</head>
+<body>
+
+<img id="logo" src="imagens/logo.png" alt="Logo do Bar">
+<h1>Raspadinha - Bar da Boa</h1>
+
+<div id="valueContainer">
+<p>Escolha o valor consumido:</p>
+<button onclick="selectValue(25)">R$25</button>
+<button onclick="selectValue(50)">R$50</button>
+<button onclick="selectValue(75)">R$75</button>
+<button onclick="selectValue(100)">R$100</button>
+</div>
+
+<div id="loginContainer" style="display:none">
+<p>Digite a senha do atendente:</p>
+<input type="password" id="password" placeholder="Senha">
+<button onclick="checkPassword()">Entrar</button>
+<p id="errorMsg" style="color:red;"></p>
+</div>
+
+<div id="scratchContainer">
+<p>Escolha suas raspadinhas!</p>
+<div id="scratchArea"></div>
+<p id="remaining"></p>
+</div>
+
+<div id="congrats"></div>
+
+<script>
+const correctPassword = "1430";
+let scratchesAllowed = 0;
+let scratchesUsed = 0;
+
+// 12 raspadinhas: 5 premiadas + 7 não premiadas
+let prizes = [
+    "Vale uma cerveja 🍺", "Vale uma cerveja 🍺",
+    "Vale um copão 🍻", "Vale um copão 🍻",
+    "Vale 1 dose 🥃",
+    "Não foi dessa vez 😢","Não foi dessa vez 😢","Não foi dessa vez 😢",
+    "Não foi dessa vez 😢","Não foi dessa vez 😢","Não foi dessa vez 😢","Não foi dessa vez 😢"
+];
+
+function selectValue(value) {
+    scratchesAllowed = Math.floor(value / 25);
+    if(scratchesAllowed > 12) scratchesAllowed = 12;
+    document.getElementById('valueContainer').style.display = "none";
+    document.getElementById('loginContainer').style.display = "block";
+}
+
+function checkPassword() {
+    const input = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+    if(input === correctPassword) {
+        document.getElementById('loginContainer').style.display = "none";
+        showScratches();
+    } else { errorMsg.textContent = "Senha incorreta!"; }
+}
+
+function showScratches() {
+    scratchesUsed = 0;
+    document.getElementById('scratchContainer').style.display = "block";
+    const scratchArea = document.getElementById('scratchArea');
+    scratchArea.innerHTML = "";
+
+    let shuffledPrizes = prizes.slice().sort(() => Math.random() - 0.5);
+
+    for(let i=0; i<12; i++){
+        const card = document.createElement('div');
+        card.className = 'scratch-card';
+        const prizeDiv = document.createElement('div');
+        prizeDiv.className = 'prize';
+        prizeDiv.textContent = shuffledPrizes[i];
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 150;
+        canvas.height = 100;
+        canvas.className = 'canvas-overlay';
+
+        card.appendChild(prizeDiv);
+        card.appendChild(canvas);
+
+        initScratch(canvas, shuffledPrizes[i]);
+
+        scratchArea.appendChild(card);
+    }
+
+    document.getElementById('remaining').textContent = `Raspadinhas restantes: ${scratchesAllowed - scratchesUsed}`;
+}
+
+function initScratch(canvas, prize) {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#555';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'destination-out';
+    let isDrawing = false;
+    let scratched = false;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        let x, y;
+        if(e.touches){ x = e.touches[0].clientX - rect.left; y = e.touches[0].clientY - rect.top; }
+        else { x = e.clientX - rect.left; y = e.clientY - rect.top; }
+        return {x, y};
+    }
+
+    function startPosition(e){
+        e.preventDefault();
+        if(scratchesUsed >= scratchesAllowed) return; // bloqueia se limite atingido
+        isDrawing = true;
+        draw(e);
+    }
+
+    function endPosition(e){ e.preventDefault(); if(isDrawing){ isDrawing = false; ctx.beginPath(); } }
+    function draw(e){ e.preventDefault(); if(!isDrawing) return; const pos = getPos(e); ctx.lineWidth = 20; ctx.lineCap = 'round'; ctx.lineTo(pos.x,pos.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(pos.x,pos.y); }
+
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', ()=>{ endPosition(); checkScratch(); });
+    canvas.addEventListener('mouseleave', endPosition);
+
+    canvas.addEventListener('touchstart', startPosition);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', ()=>{ endPosition(); checkScratch(); });
+    canvas.addEventListener('touchcancel', endPosition);
+
+    function checkScratch() {
+        if(!scratched && scratchesUsed < scratchesAllowed) {
+            scratched = true;
+            scratchesUsed++;
+            document.getElementById('remaining').textContent = `Raspadinhas restantes: ${scratchesAllowed - scratchesUsed}`;
+            if(prize !== "Não foi dessa vez 😢") showCongrats(prize);
+
+            // Bloquear todas as outras raspadinhas se limite atingido
+            if(scratchesUsed >= scratchesAllowed){
+                document.querySelectorAll('.canvas-overlay').forEach(c => c.style.pointerEvents = 'none');
+            }
+        }
+    }
+}
+
+function showCongrats(prize) {
+    const congratsDiv = document.getElementById('congrats');
+    congratsDiv.textContent = `🎉 Parabéns! Você ganhou: ${prize} 🎉`;
+    congratsDiv.style.display = 'block';
+    setTimeout(()=>{ congratsDiv.style.display = 'none'; }, 2500);
+}
+</script>
+
+</body>
+</html>
