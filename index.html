@@ -49,16 +49,18 @@ const correctPassword = "1430";
 let scratchesAllowed = 0;
 let scratchesUsed = 0;
 
+// 12 raspadinhas: 5 premiadas + 7 não premiadas
 let prizes = [
     "Vale uma cerveja 🍺", "Vale uma cerveja 🍺",
     "Vale um copão 🍻", "Vale um copão 🍻",
     "Vale 1 dose 🥃",
-    "Sem prêmio 😢", "Sem prêmio 😢", "Sem prêmio 😢", "Sem prêmio 😢", "Sem prêmio 😢"
+    "Não foi dessa vez 😢","Não foi dessa vez 😢","Não foi dessa vez 😢",
+    "Não foi dessa vez 😢","Não foi dessa vez 😢","Não foi dessa vez 😢","Não foi dessa vez 😢"
 ];
 
 function selectValue(value) {
     scratchesAllowed = value / 25;
-    if(scratchesAllowed > 10) scratchesAllowed = 10;
+    if(scratchesAllowed > 12) scratchesAllowed = 12;
     document.getElementById('valueContainer').style.display = "none";
     document.getElementById('loginContainer').style.display = "block";
 }
@@ -80,7 +82,7 @@ function showScratches() {
 
     let shuffledPrizes = prizes.slice().sort(() => Math.random() - 0.5);
 
-    for(let i=0; i<10; i++){
+    for(let i=0; i<12; i++){
         const card = document.createElement('div');
         card.className = 'scratch-card';
         const prizeDiv = document.createElement('div');
@@ -105,7 +107,7 @@ function showScratches() {
 
 function initScratch(canvas, prize) {
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#AAAAAA'; // cor da cobertura
+    ctx.fillStyle = '#AAAAAA';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = 'destination-out';
     let isDrawing = false;
@@ -138,7 +140,10 @@ function initScratch(canvas, prize) {
             scratched = true;
             scratchesUsed++;
             document.getElementById('remaining').textContent = `Raspadinhas restantes: ${scratchesAllowed - scratchesUsed}`;
-            showCongrats(prize);
+            if(prize !== "Não foi dessa vez 😢") showCongrats(prize);
+        } else if(scratchesUsed >= scratchesAllowed && !scratched) {
+            scratched = true;
+            canvas.style.pointerEvents = 'none';
         }
     }
 }
