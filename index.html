@@ -12,7 +12,6 @@
     .scratch-card { position: relative; display: inline-block; margin: 10px; }
     .prize { width: 150px; height: 100px; line-height: 100px; background-color: #fffae6; font-weight: bold; color: #333; border: 2px solid #ccc; border-radius: 8px; user-select: none; }
     .canvas-overlay { position: absolute; top: 0; left: 0; }
-    .disabled { opacity: 0.5; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -88,8 +87,8 @@ function showScratches() {
         canvas.className = 'canvas-overlay';
         card.appendChild(prizeDiv); card.appendChild(canvas);
 
-        if(i >= scratchesAllowed){ canvas.classList.add('disabled'); }
-        else { initScratch(canvas); }
+        // Todas as raspadinhas agora podem ser raspadas
+        initScratch(canvas);
 
         scratchArea.appendChild(card);
     }
@@ -131,7 +130,6 @@ function countScratch() {
     scratchesUsed++;
     const remaining = scratchesAllowed - scratchesUsed;
     document.getElementById('remaining').textContent = `Raspadinhas restantes: ${remaining}`;
-    if(remaining <= 0){ document.querySelectorAll('.canvas-overlay:not(.disabled)').forEach(c=>c.classList.add('disabled')); }
 }
 </script>
 
