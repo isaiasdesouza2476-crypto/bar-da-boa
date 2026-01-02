@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Bar da Boa - Raspadinha da Sorte</title>
+</head>
+<body style="font-family: Arial; text-align:center; background:#111; color:#fff;">
+
+  <img src="959DABE3-E180-47FF-BF8B-CE8587370551.png" style="max-width:200px; margin-top:20px;">
+
+  <h1>🎉 Raspadinha da Sorte 🎉</h1>
+  <p>Consuma R$25,00 e raspe 1 vez</p>
+  <p>Senha do atendente obrigatória</p>
+
+  <button onclick="raspar()" style="padding:12px 20px; font-size:18px;">RASPAR</button>
+
+  <p id="resultado" style="font-size:22px; margin-top:20px;"></p>
+
+  <script>
+    let premios = [
+      "🍺 Vale 1 Cerveja",
+      "🍺 Vale 1 Cerveja",
+      "🥤 Vale 1 Copão",
+      "🥤 Vale 1 Copão",
+      "❌ Não foi dessa vez",
+      "❌ Não foi dessa vez",
+      "❌ Não foi dessa vez",
+      "❌ Não foi dessa vez",
+      "❌ Não foi dessa vez",
+      "❌ Não foi dessa vez"
+    ];
+
+    function raspar() {
+      let senha = prompt("Digite a senha do atendente:");
+      if (senha !== "1430") {
+        alert("Senha incorreta");
+        return;
+      }
+
+      if (premios.length === 0) {
+        document.getElementById("resultado").innerText = "Raspadinhas encerradas!";
+        return;
+      }
+
+      let i = Math.floor(Math.random() * premios.length);
+      let premio = premios.splice(i, 1)[0];
+      document.getElementById("resultado").innerText = premio;
+    }
+  </script>
+
+</body>
+</html>
